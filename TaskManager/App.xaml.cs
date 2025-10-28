@@ -19,7 +19,7 @@ public partial class App : Application
         _serviceProvider = services.BuildServiceProvider();
     }
 
-    private void ConfigureServices(IServiceCollection services)
+    private static void ConfigureServices(IServiceCollection services)
     {
         var dbPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -33,7 +33,6 @@ public partial class App : Application
             options.UseSqlite($"Data Source={dbPath}"));
 
         services.AddScoped<ITaskRepository, TaskRepository>();
-
         services.AddScoped<ITaskService, TaskService>();
     }
 
