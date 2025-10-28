@@ -13,5 +13,5 @@ public class Person
     [EmailAddress, StringLength(100)]
     public string? Email { get; set; }
 
-    public ICollection<Task> Tasks { get; set; } = [];
+    public ICollection<WorkTask> Tasks { get; set; } = [];
 }

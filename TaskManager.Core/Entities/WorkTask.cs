@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TaskManager.Core.Entities;
 
-public class Task
+public class WorkTask
 {
     [Key]
     public Guid Id { get; set; }
