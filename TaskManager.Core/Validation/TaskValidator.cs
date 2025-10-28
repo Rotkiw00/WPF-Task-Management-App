@@ -3,7 +3,7 @@ using TaskManager.Core.Enums;
 
 namespace TaskManager.Core.Validation
 {
-    public class TaskValidator : AbstractValidator<Entities.Task>
+    public class TaskValidator : AbstractValidator<Entities.WorkTask>
     {
         public TaskValidator()
         {
