@@ -165,7 +165,7 @@ public static class DataSeeder
                 Id = Guid.NewGuid(),
                 Title = "Research new UI framework",
                 Description = "Evaluate alternatives to current WPF implementation",
-                Status = Status.Cancelled,
+                Status = Status.Rejected    ,
                 Priority = Priority.Low,
                 CreatedDateTime = DateTime.Now.AddDays(-15),
                 DueDate = DateTime.Now.AddDays(-5),

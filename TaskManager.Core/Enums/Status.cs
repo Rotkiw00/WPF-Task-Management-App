@@ -7,5 +7,5 @@ public enum Status
     InProgress,
     UnderReview,
     Completed,
-    Cancelled
+    Rejected
 }
