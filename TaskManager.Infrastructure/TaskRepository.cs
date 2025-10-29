@@ -81,13 +81,12 @@ public class TaskRepository(TaskDbContext context) : ITaskRepository
         if (string.IsNullOrWhiteSpace(searchTerm))
             return await GetAllTasksAsync();
 
-        var lowerSearch = searchTerm.ToLower();
         return await _context.Tasks
-            .Include(t => t.AssignedTo)
-            .Where(t => t.Title.Contains(lowerSearch, StringComparison.CurrentCultureIgnoreCase) ||
-                            t.Description.Contains(lowerSearch, StringComparison.CurrentCultureIgnoreCase))
-            .OrderByDescending(t => t.CreatedDateTime)
-            .ToListAsync();
+        .Include(t => t.AssignedTo)
+        .Where(t => EF.Functions.Like(t.Title, $"%{searchTerm}%") || 
+                            EF.Functions.Like(t.Description, $"%{searchTerm}%"))
+        .OrderByDescending(t => t.CreatedDateTime)
+        .ToListAsync();
     }
 
     public async Task<List<Person>> GetAllPeopleAsync()

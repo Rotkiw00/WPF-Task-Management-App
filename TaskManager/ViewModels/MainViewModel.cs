@@ -28,8 +28,9 @@ public class MainViewModel : BaseViewModel
         EditTaskCommand = new RelayCommand(EditTask, () => SelectedTask != null);
         DeleteTaskCommand = new RelayCommand(async () => await DeleteTask(), () => SelectedTask != null);
         SearchCommand = new RelayCommand(async () => await SearchTasks());
+        ClearFiltersCommand = new RelayCommand(async () => await ClearFilters()); // ✨ NOWE
 
-        _ = LoadTasks();
+        Task.Run(LoadTasks);
     }
 
     #region Properties
@@ -49,7 +50,11 @@ public class MainViewModel : BaseViewModel
     public string SearchText
     {
         get => _searchText;
-        set => SetProperty(ref _searchText, value, nameof(SearchText));
+        set
+        {
+            SetProperty(ref _searchText, value, nameof(SearchText));
+            OnPropertyChanged(nameof(HasActiveFilters)); // ✨ Update indicator
+        }
     }
 
     public Status? SelectedStatus
@@ -58,7 +63,13 @@ public class MainViewModel : BaseViewModel
         set
         {
             SetProperty(ref _selectedStatus, value, nameof(SelectedStatus));
-            _ = FilterTasks(); // Auto-filter when status changes
+            OnPropertyChanged(nameof(HasActiveFilters)); // ✨ Update indicator
+
+            // Only auto-filter if user is not searching
+            if (string.IsNullOrEmpty(SearchText))
+            {
+                _ = FilterTasks();
+            }
         }
     }
 
@@ -68,7 +79,13 @@ public class MainViewModel : BaseViewModel
         set
         {
             SetProperty(ref _selectedPriority, value, nameof(SelectedPriority));
-            _ = FilterTasks(); // Auto-filter when priority changes
+            OnPropertyChanged(nameof(HasActiveFilters)); // ✨ Update indicator
+
+            // Only auto-filter if user is not searching
+            if (string.IsNullOrEmpty(SearchText))
+            {
+                _ = FilterTasks();
+            }
         }
     }
 
@@ -78,9 +95,15 @@ public class MainViewModel : BaseViewModel
         set => SetProperty(ref _statusMessage, value, nameof(StatusMessage));
     }
 
+    // ✨ NOWE - Visual indicator for active filters
+    public bool HasActiveFilters =>
+        SelectedStatus != null ||
+        SelectedPriority != null ||
+        !string.IsNullOrEmpty(SearchText);
+
     // For ComboBoxes
-    public static Array StatusOptions => Enum.GetValues(typeof(Status));
-    public static Array PriorityOptions => Enum.GetValues(typeof(Priority));
+    public Array StatusOptions => Enum.GetValues(typeof(Status));
+    public Array PriorityOptions => Enum.GetValues(typeof(Priority));
 
     #endregion
 
@@ -91,10 +114,11 @@ public class MainViewModel : BaseViewModel
     public ICommand EditTaskCommand { get; }
     public ICommand DeleteTaskCommand { get; }
     public ICommand SearchCommand { get; }
+    public ICommand ClearFiltersCommand { get; } // ✨ NOWE
 
     #endregion
 
-    #region Useful Methods
+    #region Private Methods
 
     private async Task LoadTasks()
     {
@@ -114,27 +138,22 @@ public class MainViewModel : BaseViewModel
             else
             {
                 StatusMessage = "Failed to load tasks: " + result.Message;
-                // TODO: Proper error handling
             }
         }
         catch (Exception ex)
         {
             StatusMessage = "Error: " + ex.Message;
-            // TODO: Add logging
         }
     }
 
     private void AddTask()
     {
-        // TODO: Open AddTaskDialog/Window
         MessageBox.Show("Add Task - TODO in Phase 6");
     }
 
     private void EditTask()
     {
         if (SelectedTask == null) return;
-
-        // TODO: Open EditTaskDialog/Window with SelectedTask
         MessageBox.Show($"Edit Task: {SelectedTask.Title} - TODO in Phase 6");
     }
 
@@ -165,12 +184,24 @@ public class MainViewModel : BaseViewModel
         }
     }
 
+    // ✨ POPRAWIONE - Clear filters on search
     private async Task SearchTasks()
     {
         if (string.IsNullOrWhiteSpace(SearchText))
         {
-            await LoadTasks();
+            // If search is empty, apply current filters
+            await FilterTasks();
             return;
+        }
+
+        // Clear combo filters when searching by text ✨ KEY FEATURE
+        if (SelectedStatus != null || SelectedPriority != null)
+        {
+            _selectedStatus = null;
+            _selectedPriority = null;
+            OnPropertyChanged(nameof(SelectedStatus));
+            OnPropertyChanged(nameof(SelectedPriority));
+            OnPropertyChanged(nameof(HasActiveFilters));
         }
 
         var result = await _taskService.SearchTasksAsync(SearchText);
@@ -183,6 +214,10 @@ public class MainViewModel : BaseViewModel
                 Tasks.Add(task);
             }
             StatusMessage = result.Message;
+        }
+        else
+        {
+            StatusMessage = "Search failed: " + result.Message;
         }
     }
 
@@ -197,7 +232,26 @@ public class MainViewModel : BaseViewModel
             {
                 Tasks.Add(task);
             }
+            StatusMessage = $"Filtered: {result.Data!.Count} tasks found";
         }
+    }
+
+    // ✨ NOWE - Clear all filters and reload
+    private async Task ClearFilters()
+    {
+        _selectedStatus = null;
+        _selectedPriority = null;
+        _searchText = "";
+
+        // Notify UI about changes
+        OnPropertyChanged(nameof(SelectedStatus));
+        OnPropertyChanged(nameof(SelectedPriority));
+        OnPropertyChanged(nameof(SearchText));
+        OnPropertyChanged(nameof(HasActiveFilters));
+
+        // Reload all tasks
+        await LoadTasks();
+        StatusMessage = "Filters cleared, showing all tasks";
     }
 
     #endregion

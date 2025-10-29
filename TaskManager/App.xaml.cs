@@ -6,6 +6,7 @@ using TaskManager.Core.Interfaces;
 using TaskManager.Core.Services;
 using TaskManager.Infrastructure;
 using TaskManager.Infrastructure.Data;
+using TaskManager.ViewModels;
 
 namespace TaskManager;
 public partial class App : Application
@@ -34,6 +35,9 @@ public partial class App : Application
 
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<ITaskService, TaskService>();
+
+        services.AddTransient<MainViewModel>();
+        services.AddTransient<MainWindow>();
     }
 
     protected override void OnStartup(StartupEventArgs e)
@@ -43,13 +47,11 @@ public partial class App : Application
         using (var scope = _serviceProvider!.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-
             context.Database.EnsureCreated();
-
             DataSeeder.SeedData(context);
         }
 
-        var mainWindow = new MainWindow();
+        var mainWindow = _serviceProvider!.GetRequiredService<MainWindow>();
         mainWindow.Show();
     }
 
