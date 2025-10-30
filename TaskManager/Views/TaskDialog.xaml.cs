@@ -32,4 +32,19 @@ public partial class TaskDialog : Window
             }
         }
     }
+
+    private void AddPersonButton_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.ShowAddPersonForm();
+    }
+
+    private void SavePersonButton_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.AddNewPerson();
+    }
+
+    private void CancelPersonButton_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.CancelAddPerson();
+    }
 }

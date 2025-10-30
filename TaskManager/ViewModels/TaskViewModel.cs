@@ -142,6 +142,21 @@ public class TaskViewModel : BaseViewModel
     
     public bool IsEditMode => _task.Id != Guid.Empty;
 
+    // Add Person functionality
+    private bool _isAddingNewPerson;
+    public bool IsAddingNewPerson
+    {
+        get => _isAddingNewPerson;
+        set => SetProperty(ref _isAddingNewPerson, value, nameof(IsAddingNewPerson));
+    }
+
+    private string _newPersonName = "";
+    public string NewPersonName
+    {
+        get => _newPersonName;
+        set => SetProperty(ref _newPersonName, value, nameof(NewPersonName));
+    }
+
     #endregion
 
     #region Commands
@@ -160,6 +175,46 @@ public class TaskViewModel : BaseViewModel
         {
             People = result.Data!;
         }
+    }
+
+    public void ShowAddPersonForm()
+    {
+        IsAddingNewPerson = true;
+        NewPersonName = "";
+    }
+
+    public void AddNewPerson()
+    {
+        if (string.IsNullOrWhiteSpace(NewPersonName))
+        {
+            MessageBox.Show("Please enter a person name.", "Validation", 
+                          MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        // Create new person
+        var newPerson = new Person 
+        { 
+            Id = Guid.NewGuid(), 
+            Name = NewPersonName.Trim() 
+        };
+        
+        // Add to list
+        _people.Add(newPerson);
+        OnPropertyChanged(nameof(People));
+        
+        // Select the new person
+        SelectedPerson = newPerson;
+        
+        // Hide form
+        IsAddingNewPerson = false;
+        NewPersonName = "";
+    }
+
+    public void CancelAddPerson()
+    {
+        IsAddingNewPerson = false;
+        NewPersonName = "";
     }
 
     private bool CanSave()

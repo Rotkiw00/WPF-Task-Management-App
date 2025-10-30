@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using TaskManager.Commands;
@@ -29,6 +30,8 @@ public class MainViewModel : BaseViewModel
         DeleteTaskCommand = new RelayCommand(async () => await DeleteTask(), () => SelectedTask != null);
         SearchCommand = new RelayCommand(async () => await SearchTasks());
         ClearFiltersCommand = new RelayCommand(async () => await ClearFilters()); // ✨ NOWE
+        ExportToCsvCommand = new RelayCommand(ExportToCsv, () => Tasks.Any());
+        ExportToExcelCommand = new RelayCommand(ExportToExcel, () => Tasks.Any());
 
         Task.Run(LoadTasks);
     }
@@ -115,6 +118,8 @@ public class MainViewModel : BaseViewModel
     public ICommand DeleteTaskCommand { get; }
     public ICommand SearchCommand { get; }
     public ICommand ClearFiltersCommand { get; } // ✨ NOWE
+    public ICommand ExportToCsvCommand { get; }
+    public ICommand ExportToExcelCommand { get; }
 
     #endregion
 
@@ -283,6 +288,95 @@ public class MainViewModel : BaseViewModel
         // Reload all tasks
         await LoadTasks();
         StatusMessage = "Filters cleared, showing all tasks";
+    }
+
+    private void ExportToCsv()
+    {
+        var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "CSV files (*.csv)|*.csv",
+            DefaultExt = ".csv",
+            FileName = $"Tasks_{DateTime.Now:yyyyMMdd_HHmmss}.csv"
+        };
+
+        if (saveFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                var lines = new List<string>();
+                
+                // Header
+                lines.Add("Title,Status,Priority,Assigned To,Due Date,Created Date,Estimated Hours,Description,Tags");
+                
+                // Data rows
+                foreach (var task in Tasks)
+                {
+                    var assignedTo = task.AssignedTo?.Name ?? "";
+                    var dueDate = task.DueDate?.ToString("yyyy-MM-dd") ?? "";
+                    var tags = task.Tags != null ? string.Join(";", task.Tags) : "";
+                    var description = task.Description?.Replace("\"", "\"\"").Replace("\n", " ").Replace("\r", "") ?? "";
+                    
+                    lines.Add($"\"{task.Title}\",{task.Status},{task.Priority},\"{assignedTo}\",{dueDate},{task.CreatedDateTime:yyyy-MM-dd},{task.EstimatedHours},\"{description}\",\"{tags}\"");
+                }
+                
+                File.WriteAllLines(saveFileDialog.FileName, lines);
+                StatusMessage = $"Exported {Tasks.Count} tasks to CSV";
+                MessageBox.Show($"Tasks exported successfully to:\n{saveFileDialog.FileName}", 
+                    "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = "Export failed";
+                MessageBox.Show($"Failed to export: {ex.Message}", "Export Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+    }
+
+    private void ExportToExcel()
+    {
+        // Simple Excel export using CSV format with .xlsx extension
+        // For a real Excel file, you'd need EPPlus or similar library
+        var saveFileDialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "Excel files (*.xlsx)|*.xlsx|CSV files (*.csv)|*.csv",
+            DefaultExt = ".xlsx",
+            FileName = $"Tasks_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx"
+        };
+
+        if (saveFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                // For now, export as tab-delimited which Excel can open
+                var lines = new List<string>();
+                
+                // Header
+                lines.Add("Title\tStatus\tPriority\tAssigned To\tDue Date\tCreated Date\tEstimated Hours\tDescription\tTags");
+                
+                // Data rows
+                foreach (var task in Tasks)
+                {
+                    var assignedTo = task.AssignedTo?.Name ?? "";
+                    var dueDate = task.DueDate?.ToString("yyyy-MM-dd") ?? "";
+                    var tags = task.Tags != null ? string.Join("; ", task.Tags) : "";
+                    var description = task.Description?.Replace("\t", " ").Replace("\n", " ").Replace("\r", "") ?? "";
+                    
+                    lines.Add($"{task.Title}\t{task.Status}\t{task.Priority}\t{assignedTo}\t{dueDate}\t{task.CreatedDateTime:yyyy-MM-dd}\t{task.EstimatedHours}\t{description}\t{tags}");
+                }
+                
+                File.WriteAllLines(saveFileDialog.FileName, lines);
+                StatusMessage = $"Exported {Tasks.Count} tasks to Excel";
+                MessageBox.Show($"Tasks exported successfully to:\n{saveFileDialog.FileName}\n\nNote: This is a tab-delimited file. For native Excel format, EPPlus library would be needed.", 
+                    "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = "Export failed";
+                MessageBox.Show($"Failed to export: {ex.Message}", "Export Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 
     #endregion
