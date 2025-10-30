@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 using TaskManager.Commands;
 using TaskManager.Core.Entities;
@@ -192,21 +191,17 @@ public class TaskViewModel : BaseViewModel
             return;
         }
 
-        // Create new person
         var newPerson = new Person 
         { 
             Id = Guid.NewGuid(), 
             Name = NewPersonName.Trim() 
         };
         
-        // Add to list
         _people.Add(newPerson);
         OnPropertyChanged(nameof(People));
         
-        // Select the new person
         SelectedPerson = newPerson;
         
-        // Hide form
         IsAddingNewPerson = false;
         NewPersonName = "";
     }

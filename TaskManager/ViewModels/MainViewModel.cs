@@ -29,7 +29,7 @@ public class MainViewModel : BaseViewModel
         EditTaskCommand = new RelayCommand(EditTask, () => SelectedTask != null);
         DeleteTaskCommand = new RelayCommand(async () => await DeleteTask(), () => SelectedTask != null);
         SearchCommand = new RelayCommand(async () => await SearchTasks());
-        ClearFiltersCommand = new RelayCommand(async () => await ClearFilters()); // ✨ NOWE
+        ClearFiltersCommand = new RelayCommand(async () => await ClearFilters());
         ExportToCsvCommand = new RelayCommand(ExportToCsv, () => Tasks.Any());
         ExportToExcelCommand = new RelayCommand(ExportToExcel, () => Tasks.Any());
 
@@ -56,7 +56,7 @@ public class MainViewModel : BaseViewModel
         set
         {
             SetProperty(ref _searchText, value, nameof(SearchText));
-            OnPropertyChanged(nameof(HasActiveFilters)); // ✨ Update indicator
+            OnPropertyChanged(nameof(HasActiveFilters));
         }
     }
 
@@ -66,9 +66,8 @@ public class MainViewModel : BaseViewModel
         set
         {
             SetProperty(ref _selectedStatus, value, nameof(SelectedStatus));
-            OnPropertyChanged(nameof(HasActiveFilters)); // ✨ Update indicator
+            OnPropertyChanged(nameof(HasActiveFilters));
 
-            // Only auto-filter if user is not searching
             if (string.IsNullOrEmpty(SearchText))
             {
                 _ = FilterTasks();
@@ -82,9 +81,8 @@ public class MainViewModel : BaseViewModel
         set
         {
             SetProperty(ref _selectedPriority, value, nameof(SelectedPriority));
-            OnPropertyChanged(nameof(HasActiveFilters)); // ✨ Update indicator
+            OnPropertyChanged(nameof(HasActiveFilters));
 
-            // Only auto-filter if user is not searching
             if (string.IsNullOrEmpty(SearchText))
             {
                 _ = FilterTasks();
@@ -98,7 +96,6 @@ public class MainViewModel : BaseViewModel
         set => SetProperty(ref _statusMessage, value, nameof(StatusMessage));
     }
 
-    // ✨ NOWE - Visual indicator for active filters
     public bool HasActiveFilters =>
         SelectedStatus != null ||
         SelectedPriority != null ||
@@ -117,7 +114,7 @@ public class MainViewModel : BaseViewModel
     public ICommand EditTaskCommand { get; }
     public ICommand DeleteTaskCommand { get; }
     public ICommand SearchCommand { get; }
-    public ICommand ClearFiltersCommand { get; } // ✨ NOWE
+    public ICommand ClearFiltersCommand { get; }
     public ICommand ExportToCsvCommand { get; }
     public ICommand ExportToExcelCommand { get; }
 
@@ -231,7 +228,6 @@ public class MainViewModel : BaseViewModel
             return;
         }
 
-        // Clear combo filters when searching by text ✨ KEY FEATURE
         if (SelectedStatus != null || SelectedPriority != null)
         {
             _selectedStatus = null;
@@ -279,7 +275,6 @@ public class MainViewModel : BaseViewModel
         _selectedPriority = null;
         _searchText = "";
 
-        // Notify UI about changes
         OnPropertyChanged(nameof(SelectedStatus));
         OnPropertyChanged(nameof(SelectedPriority));
         OnPropertyChanged(nameof(SearchText));
@@ -335,8 +330,6 @@ public class MainViewModel : BaseViewModel
 
     private void ExportToExcel()
     {
-        // Simple Excel export using CSV format with .xlsx extension
-        // For a real Excel file, you'd need EPPlus or similar library
         var saveFileDialog = new Microsoft.Win32.SaveFileDialog
         {
             Filter = "Excel files (*.xlsx)|*.xlsx|CSV files (*.csv)|*.csv",
@@ -348,7 +341,6 @@ public class MainViewModel : BaseViewModel
         {
             try
             {
-                // For now, export as tab-delimited which Excel can open
                 var lines = new List<string>();
                 
                 // Header
