@@ -44,7 +44,7 @@ TaskManager/
 │   ├── Configurations/      # EF entity configurations
 │   └── Data/               # DataSeeder for sample data
 │
-├── TaskManager.UI/           # Presentation layer (WPF)
+├── TaskManager/           # Presentation layer (WPF)
 │   ├── ViewModels/          # MainViewModel, TaskViewModel
 │   ├── Views/               # MainWindow, TaskDialog
 │   ├── Commands/            # RelayCommand, AsyncRelayCommand
