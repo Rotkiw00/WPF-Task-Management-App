@@ -146,15 +146,48 @@ public class MainViewModel : BaseViewModel
         }
     }
 
-    private void AddTask()
+    private async void AddTask()
     {
-        MessageBox.Show("Add Task - TODO in Phase 6");
+        try
+        {
+            var viewModel = new TaskViewModel(_taskService);
+            var dialog = new TaskManager.Views.TaskDialog(viewModel);
+
+            var result = dialog.ShowDialog();
+
+            if (result == true)
+            {
+                await LoadTasks();
+                StatusMessage = "Task added successfully!";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error opening add dialog: {ex.Message}";
+        }
     }
 
-    private void EditTask()
+    private async void EditTask()
     {
         if (SelectedTask == null) return;
-        MessageBox.Show($"Edit Task: {SelectedTask.Title} - TODO in Phase 6");
+
+        try
+        {
+            var viewModel = new TaskViewModel(_taskService, SelectedTask);
+            var dialog = new TaskManager.Views.TaskDialog(viewModel);
+
+            var result = dialog.ShowDialog();
+
+            if (result == true) 
+            {
+                await LoadTasks(); 
+                StatusMessage = "Task updated successfully! ✏️";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error opening edit dialog: {ex.Message}";
+        }
     }
 
     private async Task DeleteTask()
@@ -184,7 +217,6 @@ public class MainViewModel : BaseViewModel
         }
     }
 
-    // ✨ POPRAWIONE - Clear filters on search
     private async Task SearchTasks()
     {
         if (string.IsNullOrWhiteSpace(SearchText))
@@ -236,7 +268,6 @@ public class MainViewModel : BaseViewModel
         }
     }
 
-    // ✨ NOWE - Clear all filters and reload
     private async Task ClearFilters()
     {
         _selectedStatus = null;
