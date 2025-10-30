@@ -44,7 +44,7 @@ TaskManager/
 │   ├── Configurations/      # EF entity configurations
 │   └── Data/               # DataSeeder for sample data
 │
-├── TaskManager.UI/           # Presentation layer (WPF)
+├── TaskManager/           # Presentation layer (WPF)
 │   ├── ViewModels/          # MainViewModel, TaskViewModel
 │   ├── Views/               # MainWindow, TaskDialog
 │   ├── Commands/            # RelayCommand, AsyncRelayCommand
@@ -283,6 +283,22 @@ Built as a technical assessment project demonstrating:
 - MVVM pattern in WPF
 - Modern C# practices
 - Comprehensive unit testing
+
+## Development Notes
+
+## Architecture Notes
+
+This project follows Clean Architecture principles learned from:
+- Robert C. Martin's "Clean Architecture" book
+- Online tutorials on MVVM and Repository patterns
+- Microsoft EF Core documentation
+- Stack Overflow for WPF DialogResult issues
+- FluentValidation GitHub examples
+
+### Challenges Faced
+- **Dialog closing issue**: Took time to understand WPF's DialogResult mechanism
+- **EF Core queries**: Had to learn about `EF.Functions.Like()` for case-insensitive search
+- **Async/Await in MVVM**: Implementing AsyncRelayCommand was tricky
 
 ---
 
